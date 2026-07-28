@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Kubernetes
+*.crt
+*.key
+*.csr
+*.p12
+*.jks
+
+# Logs
+*.log
+
+# Terraform
+.terraform/
+
+# Docker
+*.tar
+
+# Misc
+tmp/
+build/
