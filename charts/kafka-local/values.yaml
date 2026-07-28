@@ -1,0 +1,20 @@
+namespace: kafka
+
+images:
+  postgres: postgres:17
+  minio: minio/minio:latest
+  schemaRegistry: confluentinc/cp-schema-registry:8.2.2
+  kafkaConnect: kafka-connect:0.1
+
+minio:
+  bucket: cdc-data
+  username: minio
+  password: minio123
+
+postgres:
+  database: inventory
+  username: postgres
+  password: postgres
+
+topics:
+  customers: inventory.public.customers
