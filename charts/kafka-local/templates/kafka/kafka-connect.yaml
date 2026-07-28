@@ -1,0 +1,63 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnect
+metadata:
+  name: kafka-connect
+  namespace: {{ .Values.namespace }}
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+
+spec:
+  version: 4.2.0
+  replicas: 1
+
+  image: {{ .Values.images.kafkaConnect }}
+
+  bootstrapServers: local-cluster-kafka-bootstrap:9093
+
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: connect-user
+      certificate: user.crt
+      key: user.key
+
+  tls:
+    trustedCertificates:
+      - secretName: local-cluster-cluster-ca-cert
+        certificate: ca.crt
+
+  groupId: connect-cluster
+  configStorageTopic: connect-configs
+  offsetStorageTopic: connect-offsets
+  statusStorageTopic: connect-status
+
+  config:
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+
+    plugin.discovery: only_scan
+
+    key.converter: io.confluent.connect.avro.AvroConverter
+    key.converter.schema.registry.url: http://schema-registry-svc:8081
+
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://schema-registry-svc:8081
+
+    config.providers: env
+    config.providers.env.class: org.apache.kafka.common.config.provider.EnvVarConfigProvider
+
+  template:
+    connectContainer:
+      env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_USER
+
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: MINIO_ROOT_PASSWORD
