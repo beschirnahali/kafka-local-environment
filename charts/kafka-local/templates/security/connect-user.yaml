@@ -1,0 +1,59 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: connect-user
+  namespace: {{ .Values.namespace }}
+  labels:
+    strimzi.io/cluster: local-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: {{ .Values.topics.customers }}
+          patternType: literal
+        operations:
+          - Read
+          - Write
+          - Create
+          - Describe
+
+      - resource:
+          type: topic
+          name: connect-configs
+          patternType: literal
+        operations:
+          - Read
+          - Write
+          - Create
+          - Describe
+
+      - resource:
+          type: topic
+          name: connect-offsets
+          patternType: literal
+        operations:
+          - Read
+          - Write
+          - Create
+          - Describe
+
+      - resource:
+          type: topic
+          name: connect-status
+          patternType: literal
+        operations:
+          - Read
+          - Write
+          - Create
+          - Describe
+
+      - resource:
+          type: group
+          name: connect-
+          patternType: prefix
+        operations:
+          - Read

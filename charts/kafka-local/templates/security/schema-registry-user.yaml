@@ -1,0 +1,35 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: schema-registry-user
+  namespace: {{ .Values.namespace }}
+  labels:
+    strimzi.io/cluster: local-cluster
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: cluster
+        operations:
+          - Describe
+
+      - resource:
+          type: group
+          name: schema-registry
+          patternType: literal
+        operations:
+            - Read
+
+      - resource:
+          type: topic
+          name: _schemas
+          patternType: literal
+        operations:
+          - Create
+          - Read
+          - Write
+          - Describe
+          - DescribeConfigs
