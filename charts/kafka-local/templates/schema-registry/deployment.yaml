@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schema-registry
+  template:
+    metadata:
+      labels:
+        app: schema-registry
+    spec:
+      containers:
+      - name: schema-registry
+        image: {{ .Values.images.schemaRegistry }}
+        ports:
+        - containerPort: 8081
+
+        env:
+        - name: SCHEMA_REGISTRY_HOST_NAME
+          value: schema-registry
+
+        - name: SCHEMA_REGISTRY_LISTENERS
+          value: http://0.0.0.0:8081
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+          value: SSL://local-cluster-kafka-bootstrap:9093
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL
+          value: SSL
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
+          value: ""
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_TYPE
+          value: PKCS12
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_LOCATION
+          value: /opt/truststore/truststore.p12
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD
+          value: changeit
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_TYPE
+          value: PKCS12
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_LOCATION
+          value: /opt/certs/user.p12
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: schema-registry-user
+              key: user.password
+
+        - name: SCHEMA_REGISTRY_KAFKASTORE_SSL_KEY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: schema-registry-user
+              key: user.password
+
+        volumeMounts:
+          - name: schema-registry-user
+            mountPath: /opt/certs
+            readOnly: true
+          - name: truststore
+            mountPath: /opt/truststore
+            readOnly: true
+
+      volumes:
+        - name: schema-registry-user
+          secret:
+            secretName: schema-registry-user
+        - name: truststore
+          secret:
+            secretName: schema-registry-truststore
