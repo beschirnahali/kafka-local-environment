@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnector
+metadata:
+  name: s3-sink
+  namespace: {{ .Values.namespace }}
+  labels:
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: io.confluent.connect.s3.S3SinkConnector
+  tasksMax: 1
+  config:
+    topics: {{ .Values.topics.customers }}
+
+    behavior.on.null.values: ignore
+
+    s3.bucket.name: {{ .Values.minio.bucket }}
+    store.url: http://minio:9000
+
+    aws.access.key.id: ${env:MINIO_ROOT_USER}
+    aws.secret.access.key: ${env:MINIO_ROOT_PASSWORD}
+    s3.region: us-east-1
+
+    storage.class: io.confluent.connect.s3.storage.S3Storage
+    format.class: io.confluent.connect.s3.format.json.JsonFormat
+
+    partitioner.class: io.confluent.connect.storage.partitioner.DefaultPartitioner
+
+    flush.size: 1
+
+    schema.compatibility: NONE
+
+    key.converter: io.confluent.connect.avro.AvroConverter
+    value.converter: io.confluent.connect.avro.AvroConverter
+
+    key.converter.schema.registry.url: http://schema-registry-svc:8081
+    value.converter.schema.registry.url: http://schema-registry-svc:8081
